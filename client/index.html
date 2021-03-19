@@ -1,0 +1,84 @@
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<script>
+function startConnect() {
+  var m = document.getElementById("myname");
+  ws = new WebSocket('ws://localhost:8080/?name=' + m.innerHTML);
+  ws.onopen = () => {
+    console.log('Connection opened!');
+    ws.send("this is client");
+  }
+  ws.onmessage = ({ data }) => {
+    console.log(data);
+    d = data.split(":");
+    if(d.length > 0) {
+      if(d[0] == "MA") {
+        var interface = document.getElementById("interface");
+        interface.innerHTML = d[1];
+      } else if(d[0] == "CC") {
+        document.body.bgColor = "rgb(" + (~~(256 * Math.random())) + ", " + (~~(256 * Math.random())) + ", " + (~~(256 * Math.random())) + ")";
+      }
+    }
+  };
+  ws.onclose = function() {
+    ws = null;
+  }
+
+  var b = document.getElementById("board");
+  b.innerHTML = "";
+}
+
+function AddWord(w) {
+  var m = document.getElementById("myname");
+  var myname = m.innerHTML;
+  myname = myname + w;
+  console.log(myname.length);
+  if(myname.length > 8 && myname.length < 14) {
+    m.style.fontSize = "16pt";
+  } else if(myname.length >= 14 && myname.length < 22) {
+    m.style.fontSize = "10pt";
+  }
+  m.innerHTML = myname;
+}
+
+function init() {
+  var w = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよわをん゛";
+  var w_ = w.split("");
+  var sb = "";
+  for(let i = 0; i < w_.length; i++) {
+    if((i+1)%5 == 0) {
+      var tag_p = "<p>";
+    } else {
+      var tag_p = "";
+    }
+    sb = sb + "<div style='background-color: blue; width: 40px; height: auto; font-size: 20pt; text-align: center; border-radius: 30px; color: #FFFFFF; display: inline-block; margin-right: 10px;' onclick=\"AddWord('" + w_[i] + "')\">" + w_[i] + "</div>" + tag_p;
+  }
+  sb = sb + "<div style='display: inline-block; background-color: orange; font-size: 20pt; width: 140px; border-radius: 8px; height: auto;' onclick='startConnect();'>O K</div>";
+  var b = document.getElementById("board");
+  b.innerHTML = "<div style='font-weight: 600; margin-bottom: 12px; text-align: center;'>お名前をおしえて</div> <div style='width: 100%; text-align: center; margin-bottom: 12px;'><div style='display: inline-block;'><div id='myname' style='width: 300px; height: 50px; border: 1px solid; margin-bottom: 12px; display: table-cell; margin-left: auto; margin-right: auto; font-size: 25pt; vertical-align: middle;'></div></div></div>" + "<div style='width: 100%; text-align: center;'>" + sb + "</div>";
+}
+
+window.onload = function() { init(); }
+
+window.onbeforeunload = function(){
+  ws.send("UL");
+}
+
+</script>
+
+</head>
+
+<body>
+
+<div id="interface">
+</div>
+
+<div id="board"></div>
+
+</body>
+
+</html>

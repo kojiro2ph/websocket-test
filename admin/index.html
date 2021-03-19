@@ -1,0 +1,60 @@
+<script>
+
+  var users = [];
+
+  ws = new WebSocket('ws://localhost:8080/?mod=admin');
+  ws.onopen = () => {
+    console.log('Connection opened!');
+    ws.send("this is client");
+  }
+  ws.onmessage = ({ data }) => {
+    console.log(data);
+    d = data.split(":");
+    if(d.length > 0) {
+      if(d[0] == "UE") {
+        var user_list = document.getElementById("user_list");
+        users.push(d[1]);
+        var str_u = "";
+
+        user_list.innerHTML = make_str_u();
+      } else if(d[0] == "UL") {
+        var user_list = document.getElementById("user_list");
+        users.forEach((item, index) => {
+          if(item === d[1]) {
+            users.splice(index, 1);
+          }
+        });
+        var str_u = "";
+        user_list.innerHTML = make_str_u();
+      }
+    }
+  };
+  ws.onclose = function() {
+    ws = null;
+  }
+
+  function make_str_u() {
+    var str_u = "";
+    for(let i = 0; i < users.length; i++) {
+      str_u = str_u + "<div style='width: fit-content; padding: 4px; background-color: yellow; border-radius: 5px; margin-bottom: 4px;' onclick=\"select_user('" + users[i] + "')\">" + users[i] + "</div>";
+    }
+    return str_u;
+  }
+
+  function send2server() {
+    cmd = document.getElementById("cmd");
+    console.log(cmd.value);
+    ws.send("SA:" + cmd.value);
+  }
+
+  function select_user(u) {
+    ws.send("CC:" + u);
+  }
+</script>
+
+<div id="user_list"></div>
+
+<textarea id="cmd" rows="20" cols="80">
+</textarea>
+<p>
+<input type="button" value="SEND" onclick="send2server();">
